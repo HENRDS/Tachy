@@ -10,8 +10,13 @@ namespace Tachy.Lexing
         {
             this.reader = reader;
         }
-        public Token EmitToken(TokenType type, object? value = null) =>
+        private Token EmitToken(TokenType type, object? value = null) =>
             new Token(type, reader.Position, reader.Lexeme, value);
+
+        private Token LineComment()
+        {
+
+        }
 
         public Token? NextToken()
         {
@@ -27,18 +32,37 @@ namespace Tachy.Lexing
                 case '}': return EmitToken(TokenType.RBrace);
                 case ':': return EmitToken(TokenType.Colon);
                 case '+': return EmitToken(reader.Match('+') ? TokenType.Plus2 : TokenType.Plus);
-                case '-': return EmitToken(TokenType.Minus);
-                case '*': return EmitToken(reader.Match('*') ? TokenType.Star2? TokenType.Star);
-                case '/': return EmitToken(TokenType.Slash);
-                case '%': return EmitToken(TokenType.Percent);
+                case '-':
+                    if (reader.Match('>'))
+                        return EmitToken(TokenType.DashGreater);
+                    if (reader.Match('-'))
+                        return EmitToken(TokenType.Minus2);
+                    return EmitToken(TokenType.Minus);
+                case '*': return EmitToken(reader.Match('*') ? TokenType.Star2: TokenType.Star);
+                case '/':
+                    if (reader.Match('/'))
+                        return LineComment();
+                    return EmitToken(TokenType.Slash);
+                case '%': return EmitToken(reader.Match('=') ? TokenType.PercentEqual : TokenType.Percent);
                 case ';': return EmitToken(TokenType.Semicolon);
-                case '.': return EmitToken(TokenType.Dot);
+                case '.':
+                    if (reader.Match('.'))
+                    {
+                        if (reader.Match('<'))
+                            return EmitToken(TokenType.Dot2Less);
+                        return EmitToken(TokenType.Dot2);
+                    }
+                    return EmitToken(TokenType.Dot);
+                case '=': return EmitToken(reader.Match('=')? TokenType.Equal2: TokenType.Equal);
+                case '|': return EmitToken(reader.Match('|')? TokenType.Pipe2: TokenType.Pipe);
+                case '&': return EmitToken(reader.Match('&')? TokenType.Ampersand2: TokenType.Ampersand);
                 case ',': return EmitToken(TokenType.Comma);
-                case '=': return EmitToken(TokenType.Equal);
                 case '~': return EmitToken(TokenType.Tilde);
                 case '?': return EmitToken(TokenType.Question);
-                case '!': return EmitToken(TokenType.Question);
+                case '!': return EmitToken(TokenType.Bang);
+
             }
+            return null;
         }
         public IEnumerable<Token> Tokenize()
         {

@@ -39,7 +39,12 @@ namespace Tachy.Lexing
         }
 
         public SourcePosition Position => new(Line, LexemeStart - LineStart, Absolute);
-
+        public void HandleNewLine()
+        {
+            Advance();
+            FillBuffer();
+            Sync();
+        }
         public void Dispose()
         {
             reader.Dispose();
