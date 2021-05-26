@@ -1,4 +1,4 @@
 .vscode/
 .vs/
-**/*.py
+**/*.pyc
 .python-version
